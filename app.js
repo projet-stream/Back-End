@@ -5,6 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var cors = require('cors');
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+var path = require('path');
+var port = process.env.PORT || 8000;
 
 require('./models/User');
 
@@ -43,6 +47,25 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+/* Serveur io*/
+server.listen(port, function(){
+  console.log('listening on port ' + port);
+
+  io.on('connection', function (socket) {
+      console.log("USER CONNECTED...");
+
+      // Gestion nouveau messages
+      socket.on('new:message', function (msgObject) {
+          io.emit('new:message', msgObject);
+      });
+
+      // Gestion nouveau utilisateurs
+      socket.on('new:member', function (name) {
+          io.emit('new:member', name);
+      });
+  });
 });
 
 module.exports = app;
