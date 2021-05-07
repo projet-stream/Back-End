@@ -6,9 +6,22 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var cors = require('cors');
 var server = require('http').Server(app);
-var io = require('socket.io')(server);
 var path = require('path');
 var port = process.env.PORT || 8000;
+
+var io = require("socket.io")(server, {
+  cors: {
+    origin: 'http://localhost:3001/',
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+io.on('connection', socket => {
+  socket.on('message', ({ name, message }) => {
+    io.emit('message', { name, message })
+  })
+})
 
 require('./models/User');
 
